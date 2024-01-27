@@ -1,0 +1,55 @@
+Welcome text
+menu
+create account
+log in
+view passwords
+log out
+exit program
+class accounts
+    username
+    password
+    logged_in = bool
+    account_id = int
+print ("Welcome to my password database program")
+load in old accounts 
+account list [] += old accoun open file
+input ("1. Create account \n2. Log in \n3.View passwords \n4. Log out \n5. Exit program)
+if 1 create acoount
+    if username taken
+    try again 
+creta account()
+add account to file
+if 2 log in
+    username
+    password
+    if account username[password] == true 
+        logged_in = true
+        password_managment()
+        password_managment:
+            input ("1.View passwords \n2. Log out \n3. Log out and Exit program)
+
+def main():
+    new_movie = Movie("wall-e_2", "family", "113", "2025", "10.0")
+    new_movie_list = [
+        new_movie.name,
+        new_movie.genre,
+        new_movie.length,
+        new_movie.year,
+        new_movie.rating,
+    ]
+    with open("uppg3_csvToClass\exempel.csv", "r", encoding="utf-8") as file:
+        file.readline()
+        for line in file:
+            line = line.strip("\n")
+            line_list = line.split(",")
+            movies.append(
+                Movie(
+                    line_list[0], line_list[1], line_list[2], line_list[3], line_list[4]
+                )
+            )
+    with open(
+        "uppg3_csvToClass\exempel.csv", "a", newline="\n", encoding="utf-8"
+    ) as file:
+        writer = csv.writer(file)
+        writer.writerow(new_movie_list)
+
