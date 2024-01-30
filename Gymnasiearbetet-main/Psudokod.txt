@@ -53,3 +53,7 @@ def main():
         writer = csv.writer(file)
         writer.writerow(new_movie_list)
 
+input("Record name:")
+input("username":)
+input("password")
+write to file
