@@ -3,27 +3,34 @@ package se.andin.test;
 import java.io.*;
 import java.util.Scanner;
 
+import se.gymnasiearbetet.projekt.Accounts;
+
 /**
  * test
  */
 public class Person {
-    private String name;
-    private String age;
+    private static String name;
+    private static String age;
 
     private Person(String name, String age) {
         this.name = name;
         this.age = age;
     }
 
-    public static Person createPerson() {
+    public static Person createPerson() throws IOException {
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println("Name:");
-            var name = scanner.nextLine();
+            name = scanner.nextLine();
             System.out.println("Age:");
-            var age = scanner.nextLine();
-            scanner.nextLine();
-            return new Person(name, age);
+            age = scanner.nextLine();
+
         }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("accounts.csv", true))) {
+            writer.write(name + "," + age + "\n");
+
+        }
+        return new Person(name, age);
+
     }
 
     public static Person loadAccountsFromFile() {
@@ -45,4 +52,3 @@ public class Person {
     public String toString() {
         return "Person name: %s age: %s".formatted(name, age);
     }
-}

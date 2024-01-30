@@ -1,15 +1,15 @@
 package se.gymnasiearbetet.projekt;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Project {
-    private String choice;
-    private int userId;
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         List<Accounts> account_list = new ArrayList<>();
+        var addAccounts = Accounts.importAccountsFromFile();
+        account_list.addAll((List<Accounts>) addAccounts);
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println("Welcome to my password database program");
             boolean done = false;
