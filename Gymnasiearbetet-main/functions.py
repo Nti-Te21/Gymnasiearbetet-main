@@ -1,5 +1,6 @@
 import csv
 import sys
+from base64 import *
 
 
 class Accounts:
@@ -19,7 +20,7 @@ def password_managment(account):
             "\n1. Create stored password \n2. View passwords\n3. Log out \n4. Exit program and log out\n"
         )
         if choice == "1":
-            print("\nCreating password coming soon")
+            create_record(account)
         elif choice == "2":
             print("\nViewing passwords coming soon")
         elif choice == "3":
@@ -63,6 +64,7 @@ def login(account_list):
     for account in account_list:
         if account.username == username and account.password == password:
             account.logged_in = True
+            logged_in_account = account
             logged_in = True
             break
         else:
@@ -72,3 +74,16 @@ def login(account_list):
         password_managment(account)
     else:
         print("Log in failed!")
+
+
+def create_record(logged_in_account):
+    record_name = input("Record name:")
+    record_username = input("Username:")
+    recod_password = input("Password:")
+    record = [record_name, record_username, recod_password]
+    byte_record = bytes(str(record), "utf-8")
+    base64_record = b64encode(byte_record)
+    with open("records.csv", "a", newline="", encoding="utf8") as file:
+        writer = csv.writer(file)
+        full_record = logged_in_account.account_id, base64_record.decode("utf-8")
+        writer.writerow(full_record)
