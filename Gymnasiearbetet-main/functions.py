@@ -79,8 +79,8 @@ def login(account_list):
 def create_record(logged_in_account):
     record_name = input("Record name:")
     record_username = input("Username:")
-    recod_password = input("Password:")
-    record = [record_name, record_username, recod_password]
+    record_password = input("Password:")
+    record = [record_name, record_username, record_password]
     byte_record = bytes(str(record), "utf-8")
     base64_record = b64encode(byte_record)
     with open("records.csv", "a", newline="", encoding="utf8") as file:
