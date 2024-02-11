@@ -56,4 +56,20 @@ def main():
 input("Record name:")
 input("username":)
 input("password")
-write to file
+write to file¨
+data[1[agawg,agawgwe,aegawe]]
+write to file data
+
+records.csv:
+1,agaewg,awegweagwe,awsegaweg
+2,awegasegawe,awegaweg,awegaweg
+saved file = readfile record.csv
+for line in saved file add to account list
+
+logged_in()
+   current records =  accounlitst index from user_id-
+   for line in current recotrs print ({line-1} + currrentrecords[line][0]
+   if choice = current records[line-1] print full lline record name record user record password 
+   input change record name
+   input change record username
+   input change record password
