@@ -76,10 +76,6 @@ public class Accounts {
 
     }
 
-    public String toString() {
-        return "Username: %s Password: %s".formatted(username, password);
-    }
-
     public static List<Accounts> importAccountsFromFile() throws IOException {
         List<Accounts> account_list = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader("accounts.csv"))) {
@@ -146,25 +142,18 @@ public class Accounts {
         var base64Record = Base64.getEncoder().encodeToString(byteRecord);
         String fullRecord = new String("," + base64Record);
         if (currentAccountRecords.contains(loggedInAccount.accountId)) {
-            System.out.println(currentAccountRecords + "currentAccountRecords during create on if");
             currentAccountRecords.add(fullRecord);
         } else {
-            System.out.println(currentAccountRecords + "currentAccountRecords during createon else");
             currentAccountRecords.add(loggedInAccount.accountId);
             currentAccountRecords.add(fullRecord);
         }
     }
 
     public static void saveRecordsToFile() throws IOException {
-        System.err.println(localRecordsData + "localRecordsstart");
-        System.err.println(currentAccountRecords + "currentAccountRecords1");
         try {
-            System.out.println(localRecordsData + "local data before put");
             if (!localRecordsData.containsKey(currentAccountRecords.get(0))) {
-                System.out.println("does not contain key");
                 localRecordsData.put(currentAccountRecords.get(0), currentAccountRecords);
             }
-            System.out.println(localRecordsData + "local data after put");
         } catch (Exception e) {
             System.err.println("error index not there");
         }
@@ -179,7 +168,6 @@ public class Accounts {
                             firstAccount = false;
                         }
                         List<String> records = localRecordsData.get(accountId);
-                        System.out.println(records + "records from local data based on id pre write");
                         if (records != null) {
                             for (String record : records) {
                                 writer.write(record + ",");
