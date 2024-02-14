@@ -2,6 +2,9 @@ import csv
 import sys
 from base64 import *
 
+current_account_records = []
+local_record_data = {}
+
 
 class Accounts:
     def __init__(self, username, password, account_id) -> None:
@@ -15,17 +18,27 @@ class Accounts:
 
 def password_managment(account):
     done = True
+    global current_account_records
+    local_record_data.clear()
+    current_account_records.clear()
+    import_records_from_file()
+    current_account_records = local_record_data.get(account.account_id)
+    if current_account_records == False:
+        current_account_records = []
+
     while done == True:
         choice = input(
             "\n1. Create stored password \n2. View passwords\n3. Log out \n4. Exit program and log out\n"
         )
         if choice == "1":
             create_record(account)
+            local_record_data[account.account_id] = current_account_records
         elif choice == "2":
             print("\nViewing passwords coming soon")
         elif choice == "3":
             print("\nLogged out!")
             account.logged_in = False
+            save_records_to_file()
             break
         elif choice == "4":
             print("\nLogged out! See you next time!\n")
@@ -77,13 +90,70 @@ def login(account_list):
 
 
 def create_record(logged_in_account):
+    global current_account_records
+    print(current_account_records)
     record_name = input("Record name:")
     record_username = input("Username:")
     record_password = input("Password:")
     record = f"{record_name}\n{record_username}\n{record_password}"
     byte_record = bytes(record, "utf-8")
     base64_record = b64encode(byte_record)
-    with open("records.csv", "a", newline="", encoding="utf8") as file:
-        writer = csv.writer(file)
-        full_record = logged_in_account.account_id, base64_record.decode("utf-8")
-        writer.writerow(full_record)
+    print(current_account_records)
+    if current_account_records:
+        current_account_records.append(base64_record.decode("utf-8"))
+    else:
+        current_account_records = [
+            int(logged_in_account.account_id),
+            base64_record.decode("utf-8"),
+        ]
+
+        print(current_account_records)
+
+
+def save_records_to_file():
+    global current_account_records
+    try:
+        print("try test id")
+        print(current_account_records)
+        print(current_account_records[0])
+        test_id = str(current_account_records[0])
+        print(test_id)
+        if test_id not in local_record_data:
+            local_record_data[current_account_records[0]] = current_account_records
+            print(local_record_data)
+            print("local records before me <-")
+            print("current_account_records after me ->")
+            print(current_account_records)
+        else:
+            print("already exsist!;. if in try did not trigger")
+    except Exception as e:
+        print("error nothing works kill me now")
+    if current_account_records:
+        with open("records.csv", "w", newline="", encoding="utf8") as writer:
+            if local_record_data:
+                first_account = True
+                for account_id, records in local_record_data.items():
+                    if first_account == False:
+                        writer.write("\n")
+                    else:
+                        first_account = False
+                    if records:
+                        print(records, "before loop after if")
+                        for record in records:
+                            # cant have duplicate records in the same account as .index will only return the first index of a matching record
+                            print(f"{record} in th loop")
+                            print(records.index(record), "index of previus")
+                            if records.index(record) == len(records) - 1:
+                                writer.write(record)
+                            else:
+                                writer.write(str(record) + ",")
+
+
+def import_records_from_file():
+    with open("records.csv", "r", encoding="utf8") as file:
+        for line in file:
+            line = line.strip("\n")
+            line_list = line.split(",")
+            local_record_data[line_list[0]] = line_list
+            print(local_record_data)
+            print("imported")

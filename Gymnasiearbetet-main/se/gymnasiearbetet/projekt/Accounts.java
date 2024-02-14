@@ -138,14 +138,14 @@ public class Accounts {
         record.append(username).append("\n");
         record.append(password);
         String stringRecord = record.toString();
+
         byte[] byteRecord = stringRecord.getBytes();
         var base64Record = Base64.getEncoder().encodeToString(byteRecord);
-        String fullRecord = new String("," + base64Record);
         if (currentAccountRecords.contains(loggedInAccount.accountId)) {
-            currentAccountRecords.add(fullRecord);
+            currentAccountRecords.add(base64Record);
         } else {
             currentAccountRecords.add(loggedInAccount.accountId);
-            currentAccountRecords.add(fullRecord);
+            currentAccountRecords.add(base64Record);
         }
     }
 
@@ -169,8 +169,14 @@ public class Accounts {
                         }
                         List<String> records = localRecordsData.get(accountId);
                         if (records != null) {
+                            System.out.println(records);
                             for (String record : records) {
-                                writer.write(record + ",");
+                                // cant have duplicate records indexof gives first index of a matching record
+                                if (records.indexOf(record) == records.size() - 1) {
+                                    writer.write(record);
+                                } else {
+                                    writer.write(record + ",");
+                                }
                             }
                         }
                     }
