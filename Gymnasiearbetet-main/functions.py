@@ -1,6 +1,9 @@
 import csv
 import sys
 from base64 import *
+from Crypto.Util.Padding import pad, unpad
+from Crypto.Cipher import AES
+import hashlib
 
 current_account_records = []
 local_record_data = {}
@@ -17,12 +20,14 @@ class Accounts:
 
 
 def password_managment(account):
+    print(f"Welcome {account.password}!")
     done = True
     global current_account_records
     local_record_data.clear()
     current_account_records.clear()
     import_records_from_file()
     current_account_records = local_record_data.get(account.account_id)
+
     if current_account_records == False:
         current_account_records = []
 
@@ -35,6 +40,11 @@ def password_managment(account):
             local_record_data[account.account_id] = current_account_records
         elif choice == "2":
             print("\nViewing passwords coming soon")
+            print(current_account_records)
+            decrypt_record(
+                current_account_records[1],
+                generate_key(account.password, account.account_id),
+            )
         elif choice == "3":
             print("\nLogged out!")
             account.logged_in = False
@@ -96,36 +106,29 @@ def create_record(logged_in_account):
     record_username = input("Username:")
     record_password = input("Password:")
     record = f"{record_name}\n{record_username}\n{record_password}"
-    byte_record = bytes(record, "utf-8")
-    base64_record = b64encode(byte_record)
+    encrypted_record = encrypt_record(
+        record,
+        key=generate_key(logged_in_account.password, logged_in_account.account_id),
+    )
+    print(encrypted_record, "encrypted record is it one or 2?")
+
     print(current_account_records)
     if current_account_records:
-        current_account_records.append(base64_record.decode("utf-8"))
+        current_account_records.append(encrypted_record)
     else:
-        current_account_records = [
-            int(logged_in_account.account_id),
-            base64_record.decode("utf-8"),
-        ]
-
-        print(current_account_records)
+        current_account_records = [int(logged_in_account.account_id), encrypted_record]
 
 
 def save_records_to_file():
     global current_account_records
     try:
-        print("try test id")
-        print(current_account_records)
-        print(current_account_records[0])
         test_id = str(current_account_records[0])
-        print(test_id)
         if test_id not in local_record_data:
             local_record_data[current_account_records[0]] = current_account_records
             print(local_record_data)
-            print("local records before me <-")
-            print("current_account_records after me ->")
             print(current_account_records)
         else:
-            print("already exsist!;. if in try did not trigger")
+            pass
     except Exception as e:
         print("error nothing works kill me now")
     if current_account_records:
@@ -138,11 +141,9 @@ def save_records_to_file():
                     else:
                         first_account = False
                     if records:
-                        print(records, "before loop after if")
                         for record in records:
                             # cant have duplicate records in the same account as .index will only return the first index of a matching record
-                            print(f"{record} in th loop")
-                            print(records.index(record), "index of previus")
+                            print(record)
                             if records.index(record) == len(records) - 1:
                                 writer.write(record)
                             else:
@@ -151,9 +152,34 @@ def save_records_to_file():
 
 def import_records_from_file():
     with open("records.csv", "r", encoding="utf8") as file:
-        for line in file:
-            line = line.strip("\n")
-            line_list = line.split(",")
-            local_record_data[line_list[0]] = line_list
-            print(local_record_data)
-            print("imported")
+        csv_reader = csv.reader(file)
+        for line in csv_reader:
+            print(line, "the line")
+            local_record_data[line[0]] = line
+
+
+def encrypt_record(record, key):
+    record = bytes(record, "utf-8")
+    ciper = AES.new(key, AES.MODE_CBC)
+    ciper_text = ciper.encrypt(pad(record, AES.block_size))
+    encoded = b64encode(ciper_text).decode("utf-8")
+    inital_vector = b64encode(ciper.iv).decode("utf-8")
+    return f'"{encoded},{inital_vector}"'
+
+
+def generate_key(password, salt):
+    byt_password = bytes(password, "utf-8")
+    byt_salt = bytes(salt, "utf-8")
+    key = pad(byt_password + byt_salt, AES.block_size)
+    return key
+
+
+def decrypt_record(record, key):
+    print(record)
+    encoded, inital_vector = record.split(",")
+    inital_vector = b64decode(inital_vector)
+    ciper = AES.new(key, AES.MODE_CBC, inital_vector)
+    encoded = b64decode(encoded)
+    decrypted = unpad(ciper.decrypt(encoded), AES.block_size).decode("utf-8")
+    print(decrypted)
+    return decrypted
