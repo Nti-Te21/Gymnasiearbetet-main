@@ -160,11 +160,10 @@ def import_records_from_file():
 
 def encrypt_record(record, key):
     record = bytes(record, "utf-8")
-    ciper = AES.new(key, AES.MODE_CBC)
+    ciper = AES.new(key, AES.MODE_ECB)
     ciper_text = ciper.encrypt(pad(record, AES.block_size))
     encoded = b64encode(ciper_text).decode("utf-8")
-    inital_vector = b64encode(ciper.iv).decode("utf-8")
-    return f'"{encoded},{inital_vector}"'
+    return f"{encoded}"
 
 
 def generate_key(password, salt):
@@ -176,9 +175,8 @@ def generate_key(password, salt):
 
 def decrypt_record(record, key):
     print(record)
-    encoded, inital_vector = record.split(",")
-    inital_vector = b64decode(inital_vector)
-    ciper = AES.new(key, AES.MODE_CBC, inital_vector)
+    encoded = record
+    ciper = AES.new(key, AES.MODE_ECB)
     encoded = b64decode(encoded)
     decrypted = unpad(ciper.decrypt(encoded), AES.block_size).decode("utf-8")
     print(decrypted)

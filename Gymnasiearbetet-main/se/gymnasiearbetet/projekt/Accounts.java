@@ -1,6 +1,7 @@
 package se.gymnasiearbetet.projekt;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -8,6 +9,9 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Base64;
 import java.util.HashMap;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.MessageDigest;
 
 public class Accounts {
     private String username;
@@ -46,7 +50,7 @@ public class Accounts {
     }
 
     public static void importRecordsFromFile() throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader("records.csv"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("javaRecords.csv"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
@@ -112,6 +116,8 @@ public class Accounts {
                 createRecord(scanner, loggedInAccount);
             } else if (choice.equals("2")) {
                 System.out.println("\nViewing passwords coming soon");
+                var output = decryptRecord(currentAccountRecords.get(1), loggedInAccount);
+                System.out.println(output);
             } else if (choice.equals("3")) {
                 System.out.println("\nLogged out!");
                 done = true;
@@ -138,14 +144,12 @@ public class Accounts {
         record.append(username).append("\n");
         record.append(password);
         String stringRecord = record.toString();
-
-        byte[] byteRecord = stringRecord.getBytes();
-        var base64Record = Base64.getEncoder().encodeToString(byteRecord);
+        String encryptedRecord = encryptRecord(stringRecord, loggedInAccount);
         if (currentAccountRecords.contains(loggedInAccount.accountId)) {
-            currentAccountRecords.add(base64Record);
+            currentAccountRecords.add(encryptedRecord);
         } else {
             currentAccountRecords.add(loggedInAccount.accountId);
-            currentAccountRecords.add(base64Record);
+            currentAccountRecords.add(encryptedRecord);
         }
     }
 
@@ -158,7 +162,7 @@ public class Accounts {
             System.err.println("error index not there");
         }
         if (currentAccountRecords.isEmpty() != true) {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter("records.csv"))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("javaRecords.csv"))) {
                 if (localRecordsData != null) {
                     boolean firstAccount = true;
                     for (String accountId : localRecordsData.keySet()) {
@@ -169,9 +173,7 @@ public class Accounts {
                         }
                         List<String> records = localRecordsData.get(accountId);
                         if (records != null) {
-                            System.out.println(records);
                             for (String record : records) {
-                                // cant have duplicate records indexof gives first index of a matching record
                                 if (records.indexOf(record) == records.size() - 1) {
                                     writer.write(record);
                                 } else {
@@ -184,5 +186,47 @@ public class Accounts {
             }
 
         }
+    }
+
+    public static String encryptRecord(String record, Accounts loggedInAccount) {
+        try {
+            SecretKeySpec key = generateKey(loggedInAccount.password, loggedInAccount.accountId);
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            System.out.println("below padded?");
+            System.out.print(record.getBytes(StandardCharsets.UTF_8));
+            System.out.println("above padded?");
+            byte[] encryptedBytes = cipher.doFinal(record.getBytes(StandardCharsets.UTF_8));
+            System.out.println(encryptedBytes);
+            return Base64.getEncoder().encodeToString(encryptedBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return record;
+    }
+
+    public static SecretKeySpec generateKey(String password, String salt) throws Exception {
+        String baseKey = password + salt;
+        byte[] byteKey = baseKey.getBytes(StandardCharsets.UTF_8);
+        MessageDigest sha = MessageDigest.getInstance("SHA-256");
+        byteKey = sha.digest(byteKey);
+        return new SecretKeySpec(byteKey, "AES");
+    }
+
+    public static String decryptRecord(String encryptedRecord, Accounts loggedInAccount) {
+        try {
+            encryptedRecord = encryptedRecord.replaceAll("\n", ""); // Remove \n from encrypted data
+            encryptedRecord = encryptedRecord.replaceAll("\\s", ""); // Remove all whitespace characters
+            SecretKeySpec key = generateKey(loggedInAccount.password, loggedInAccount.accountId);
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedRecord));
+            System.out.println("Decrypted Bytes: " + Arrays.toString(decryptedBytes));
+            System.err.println(decryptedBytes);
+            return new String(decryptedBytes, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return encryptedRecord;
     }
 }
