@@ -115,9 +115,7 @@ public class Accounts {
             if (choice.equals("1")) {
                 createRecord(scanner, loggedInAccount);
             } else if (choice.equals("2")) {
-                System.out.println("\nViewing passwords coming soon");
-                var output = decryptRecord(currentAccountRecords.get(1), loggedInAccount);
-                System.out.println(output);
+                viewRecord(loggedInAccount, scanner);
             } else if (choice.equals("3")) {
                 System.out.println("\nLogged out!");
                 done = true;
@@ -193,11 +191,7 @@ public class Accounts {
             SecretKeySpec key = generateKey(loggedInAccount.password, loggedInAccount.accountId);
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            System.out.println("below padded?");
-            System.out.print(record.getBytes(StandardCharsets.UTF_8));
-            System.out.println("above padded?");
             byte[] encryptedBytes = cipher.doFinal(record.getBytes(StandardCharsets.UTF_8));
-            System.out.println(encryptedBytes);
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,12 +215,42 @@ public class Accounts {
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedRecord));
-            System.out.println("Decrypted Bytes: " + Arrays.toString(decryptedBytes));
-            System.err.println(decryptedBytes);
             return new String(decryptedBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return encryptedRecord;
+    }
+
+    public static List<String> viewRecord(Accounts loggedInAccount, Scanner scanner) {
+        var doneRecords = false;
+        while (!doneRecords) {
+            int index = 1;
+            for (String record : currentAccountRecords) {
+                if (record.equals(loggedInAccount.accountId)) {
+                    continue;
+                }
+                record = decryptRecord(record, loggedInAccount);
+                String recordName = record.split("\n", 2)[0];
+                System.out.println("%s.%s".formatted(index, recordName));
+                index++;
+            }
+            System.out.println("Enter the number of the record you want to view or type 'exit' to exit");
+            var choice = scanner.nextLine();
+            System.out.println("\n");
+            choice = choice.toLowerCase();
+            if (choice.equals("exit")) {
+                doneRecords = true;
+            } else if (Integer.parseInt(choice) <= currentAccountRecords.size()) {
+                System.out.println(decryptRecord(currentAccountRecords.get(Integer.parseInt(choice)), loggedInAccount));
+                System.out.println("Press enter to continue");
+                scanner.nextLine();
+            } else {
+                System.out.println("Invalid input");
+
+            }
+
+        }
+        return currentAccountRecords;
     }
 }

@@ -19,7 +19,6 @@ public class Project {
                 if (choice.equals("1")) {
                     Accounts account = Accounts.createAccount(scanner, account_list);
                     account_list.add(account);
-                    System.out.println(account);
                 } else if (choice.equals("2")) {
                     var loggedInAccount = Accounts.log_in(scanner, account_list);
                     if (loggedInAccount != null) {
