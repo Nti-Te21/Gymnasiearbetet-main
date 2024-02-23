@@ -20,7 +20,7 @@ class Accounts:
 
 
 def password_managment(account):
-    print(f"Welcome {account.password}!")
+    print(f"Welcome {account.username}!")
     done = True
     global current_account_records
     local_record_data.clear()
@@ -39,12 +39,7 @@ def password_managment(account):
             create_record(account)
             local_record_data[account.account_id] = current_account_records
         elif choice == "2":
-            print("\nViewing passwords coming soon")
-            print(current_account_records)
-            decrypt_record(
-                current_account_records[1],
-                generate_key(account.password, account.account_id),
-            )
+            view_record(logged_in_account=account)
         elif choice == "3":
             print("\nLogged out!")
             account.logged_in = False
@@ -101,7 +96,6 @@ def login(account_list):
 
 def create_record(logged_in_account):
     global current_account_records
-    print(current_account_records)
     record_name = input("Record name:")
     record_username = input("Username:")
     record_password = input("Password:")
@@ -110,9 +104,6 @@ def create_record(logged_in_account):
         record,
         key=generate_key(logged_in_account.password, logged_in_account.account_id),
     )
-    print(encrypted_record, "encrypted record is it one or 2?")
-
-    print(current_account_records)
     if current_account_records:
         current_account_records.append(encrypted_record)
     else:
@@ -125,8 +116,6 @@ def save_records_to_file():
         test_id = str(current_account_records[0])
         if test_id not in local_record_data:
             local_record_data[current_account_records[0]] = current_account_records
-            print(local_record_data)
-            print(current_account_records)
         else:
             pass
     except Exception as e:
@@ -142,8 +131,6 @@ def save_records_to_file():
                         first_account = False
                     if records:
                         for record in records:
-                            # cant have duplicate records in the same account as .index will only return the first index of a matching record
-                            print(record)
                             if records.index(record) == len(records) - 1:
                                 writer.write(record)
                             else:
@@ -154,7 +141,6 @@ def import_records_from_file():
     with open("records.csv", "r", encoding="utf8") as file:
         csv_reader = csv.reader(file)
         for line in csv_reader:
-            print(line, "the line")
             local_record_data[line[0]] = line
 
 
@@ -174,10 +160,48 @@ def generate_key(password, salt):
 
 
 def decrypt_record(record, key):
-    print(record)
     encoded = record
     ciper = AES.new(key, AES.MODE_ECB)
     encoded = b64decode(encoded)
     decrypted = unpad(ciper.decrypt(encoded), AES.block_size).decode("utf-8")
-    print(decrypted)
     return decrypted
+
+
+def view_record(logged_in_account):
+    done_record = False
+    while done_record == False:
+        index = 1
+        for record in current_account_records:
+            if record == int(logged_in_account.account_id) or index >= len(
+                current_account_records
+            ):
+                continue
+            else:
+                show_record = decrypt_record(
+                    current_account_records[index],
+                    generate_key(
+                        logged_in_account.password, logged_in_account.account_id
+                    ),
+                )
+                print(f"{index}. {show_record.splitlines()[0]}")
+                index += 1
+        choice = input(
+            "Enter the number of the record you want to view or type 'exit' to exit"
+        )
+        if choice == "exit":
+            done_record = True
+            break
+        elif choice.isdigit() and int(choice) <= len(current_account_records):
+            print("\n")
+            print(
+                decrypt_record(
+                    current_account_records[int(choice)],
+                    generate_key(
+                        logged_in_account.password, logged_in_account.account_id
+                    ),
+                ),
+            )
+            input("Press enter to continue")
+        else:
+            print("Invalid input")
+            continue
