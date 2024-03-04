@@ -24,7 +24,6 @@ def password_managment(account):
     done = True
     global current_account_records
     local_record_data.clear()
-    current_account_records.clear()
     import_records_from_file()
     current_account_records = local_record_data.get(account.account_id)
 
