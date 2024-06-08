@@ -182,7 +182,6 @@ public class Accounts {
                     }
                 }
             }
-
         }
     }
 
@@ -209,8 +208,8 @@ public class Accounts {
 
     public static String decryptRecord(String encryptedRecord, Accounts loggedInAccount) {
         try {
-            encryptedRecord = encryptedRecord.replaceAll("\n", ""); // Remove \n from encrypted data
-            encryptedRecord = encryptedRecord.replaceAll("\\s", ""); // Remove all whitespace characters
+            encryptedRecord = encryptedRecord.replaceAll("\n", "");
+            encryptedRecord = encryptedRecord.replaceAll("\\s", "");
             SecretKeySpec key = generateKey(loggedInAccount.password, loggedInAccount.accountId);
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.DECRYPT_MODE, key);
@@ -247,7 +246,7 @@ public class Accounts {
                 scanner.nextLine();
             } else {
                 System.out.println("Invalid input");
-
+                continue;
             }
 
         }

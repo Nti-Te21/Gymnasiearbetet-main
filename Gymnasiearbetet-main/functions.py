@@ -3,7 +3,6 @@ import sys
 from base64 import *
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Cipher import AES
-import hashlib
 
 current_account_records = []
 local_record_data = {}

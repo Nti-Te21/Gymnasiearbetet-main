@@ -11,7 +11,7 @@ public class Project {
         var addAccounts = Accounts.importAccountsFromFile();
         account_list.addAll((List<Accounts>) addAccounts);
         try (Scanner scanner = new Scanner(System.in)) {
-            System.out.println("Welcome to my JAva password database program");
+            System.out.println("Welcome to my password database program");
             boolean done = false;
             while (!done) {
                 System.out.println("1. Create account \n2. Log in \n3. Exit program");
